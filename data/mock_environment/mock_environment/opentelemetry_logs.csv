@@ -1,0 +1,94 @@
+timestamp,service,level,message
+2026-09-22 05:02:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 05:02:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 05:01:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 05:01:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 05:00:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 05:00:29,payment-service,INFO,Healthcheck 200 OK. Processed batch 188 transactions.
+2026-09-22 05:00:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:59:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 04:59:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:59:29,auth-service,INFO,Healthcheck 200 OK. Processed batch 823 transactions.
+2026-09-22 04:59:29,redis-cache,INFO,Healthcheck 200 OK. Processed batch 914 transactions.
+2026-09-22 04:58:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 04:58:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:57:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 04:57:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:56:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 04:56:29,payment-service,INFO,Healthcheck 200 OK. Processed batch 701 transactions.
+2026-09-22 04:56:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:55:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 04:55:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:54:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:54:29,postgres-db,FATAL,FATAL: remaining connection slots are reserved for non-replication superuser connections (max_connections=100)
+2026-09-22 04:53:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:52:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:51:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 435 transactions.
+2026-09-22 04:51:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:50:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:49:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:49:29,auth-service,INFO,Healthcheck 200 OK. Processed batch 571 transactions.
+2026-09-22 04:48:29,payment-service,INFO,Healthcheck 200 OK. Processed batch 723 transactions.
+2026-09-22 04:48:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:47:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:46:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:45:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:44:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:44:29,auth-service,INFO,Healthcheck 200 OK. Processed batch 659 transactions.
+2026-09-22 04:43:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:42:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:41:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:40:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:39:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:38:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:37:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:36:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:35:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:34:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:33:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:32:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:31:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:30:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:29:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:28:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:27:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:26:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 581 transactions.
+2026-09-22 04:26:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:25:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:24:29,api-gateway,INFO,Healthcheck 200 OK. Processed batch 368 transactions.
+2026-09-22 04:24:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:23:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:22:29,redis-cache,INFO,Healthcheck 200 OK. Processed batch 897 transactions.
+2026-09-22 04:22:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:21:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:20:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:20:29,auth-service,INFO,Healthcheck 200 OK. Processed batch 667 transactions.
+2026-09-22 04:19:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:18:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:17:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:16:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:16:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 226 transactions.
+2026-09-22 04:15:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:14:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:13:29,payment-service,ERROR,ConnectionAcquisitionTimeoutError: Failed to obtain DB connection from pool after 30000ms. Active workers: 64
+2026-09-22 04:12:29,redis-cache,INFO,Healthcheck 200 OK. Processed batch 572 transactions.
+2026-09-22 04:12:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 513 transactions.
+2026-09-22 04:08:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 277 transactions.
+2026-09-22 04:04:29,redis-cache,INFO,Healthcheck 200 OK. Processed batch 760 transactions.
+2026-09-22 04:03:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 464 transactions.
+2026-09-22 04:02:29,api-gateway,INFO,Healthcheck 200 OK. Processed batch 470 transactions.
+2026-09-22 03:56:29,order-service,INFO,Healthcheck 200 OK. Processed batch 863 transactions.
+2026-09-22 03:55:29,redis-cache,INFO,Healthcheck 200 OK. Processed batch 270 transactions.
+2026-09-22 03:50:29,api-gateway,INFO,Healthcheck 200 OK. Processed batch 862 transactions.
+2026-09-22 03:49:29,auth-service,INFO,Healthcheck 200 OK. Processed batch 448 transactions.
+2026-09-22 03:46:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 184 transactions.
+2026-09-22 03:41:29,order-service,INFO,Healthcheck 200 OK. Processed batch 718 transactions.
+2026-09-22 03:40:29,api-gateway,INFO,Healthcheck 200 OK. Processed batch 546 transactions.
+2026-09-22 03:35:29,payment-service,INFO,Healthcheck 200 OK. Processed batch 904 transactions.
+2026-09-22 03:35:29,api-gateway,INFO,Healthcheck 200 OK. Processed batch 471 transactions.
+2026-09-22 03:31:29,payment-service,INFO,Healthcheck 200 OK. Processed batch 744 transactions.
+2026-09-22 03:26:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 634 transactions.
+2026-09-22 03:25:29,api-gateway,INFO,Healthcheck 200 OK. Processed batch 462 transactions.
+2026-09-22 03:19:29,redis-cache,INFO,Healthcheck 200 OK. Processed batch 403 transactions.
+2026-09-22 03:05:29,order-service,INFO,Healthcheck 200 OK. Processed batch 774 transactions.
+2026-09-22 03:03:29,postgres-db,INFO,Healthcheck 200 OK. Processed batch 483 transactions.
