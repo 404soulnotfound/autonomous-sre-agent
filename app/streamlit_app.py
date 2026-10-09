@@ -1,12 +1,12 @@
 """
-Autonomous Incident RCA & Self-Healing SRE Agent Dashboard.
-Redesigned with Option 4: Glassmorphic Tactical Dashboard (Futuristic Mission Control Dark).
+Autonomous SRE Agent — War Room Command Center.
+Full-bleed single-screen layout with ZERO tabs and ZERO sidebar.
+Zones: Header → Telemetry Sparklines → Service Grid + Radar → Chaos Controls → Agent RCA → Deep Dive.
 """
 
 import sys
 from pathlib import Path
 
-# Add project root to sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -14,7 +14,6 @@ if str(PROJECT_ROOT) not in sys.path:
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import plotly.graph_objects as go
 
 from data.mock_environment.simulator import MockCloudEnvironment
@@ -22,141 +21,182 @@ from src.agent import AutonomousSREAgent
 
 
 st.set_page_config(
-    page_title="Tactical SRE // Autonomous Agent Command",
+    page_title="AutoSRE // War Room",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Option 4: Glassmorphic Tactical Dark Theme
+
+def hex_to_rgba(hex_color, alpha=0.1):
+    h = hex_color.lstrip("#")
+    return f"rgba({int(h[0:2],16)},{int(h[2:4],16)},{int(h[4:6],16)},{alpha})"
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# GLASSMORPHIC WAR ROOM THEME
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
     html, body, [class*="css"] {
         font-family: 'Space Grotesk', -apple-system, sans-serif;
     }
-    
-    /* Deep Navy Space Canvas */
+
+    /* ── Kill Sidebar ── */
+    section[data-testid="stSidebar"] { display: none !important; }
+    button[kind="header"] { display: none !important; }
+
+    /* ── Deep Space Canvas ── */
     .stApp {
-        background: radial-gradient(circle at 15% 15%, #0F172A 0%, #0A0F1D 100%);
-        color: #F1F5F9;
+        background: linear-gradient(160deg, #080C18 0%, #0F172A 45%, #131B2E 100%);
+        color: #E2E8F0;
     }
-    
-    /* Frosted Glass Card */
-    .glass-card {
+    header[data-testid="stHeader"] {
+        background: rgba(8, 12, 24, 0.85) !important;
+        backdrop-filter: blur(12px);
+    }
+
+    /* ── Glass Surface ── */
+    .glass {
+        background: rgba(30, 41, 59, 0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 14px;
+    }
+
+    /* ── Spark Card ── */
+    .spark-card {
+        background: rgba(30, 41, 59, 0.35);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
+        padding: 16px 20px 4px 20px;
+    }
+
+    /* ── Service Cards ── */
+    .svc-card {
         background: rgba(30, 41, 59, 0.45);
         backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
-        padding: 20px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        margin-bottom: 16px;
+        padding: 18px;
+        text-align: center;
     }
-    
-    /* Mission Control Header */
-    .mission-header {
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(139, 92, 246, 0.25);
-        border-radius: 16px;
-        padding: 16px 24px;
+    .svc-card.degraded {
+        background: rgba(239, 68, 68, 0.07);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        box-shadow: 0 0 35px rgba(239, 68, 68, 0.12);
+    }
+    .svc-card.nominal {
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* ── War Room Header ── */
+    .warroom-hdr {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        box-shadow: 0 0 25px rgba(139, 92, 246, 0.15);
+        padding: 10px 0 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        margin-bottom: 18px;
     }
-    
-    /* Floating Status Pills */
-    .pill-critical {
-        background: rgba(239, 68, 68, 0.2);
+
+    /* ── Status Pills ── */
+    .pill-crit {
+        background: rgba(239, 68, 68, 0.14);
         color: #FCA5A5;
-        border: 1px solid rgba(239, 68, 68, 0.5);
-        padding: 6px 14px;
-        border-radius: 20px;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        padding: 8px 20px;
+        border-radius: 24px;
         font-weight: 700;
-        font-size: 13px;
-        letter-spacing: 0.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+        font-size: 12px;
+        letter-spacing: 1.2px;
+        animation: pulse-glow 2s ease-in-out infinite;
     }
-    
-    .pill-operational {
-        background: rgba(16, 185, 129, 0.15);
+    .pill-ok {
+        background: rgba(16, 185, 129, 0.1);
         color: #6EE7B7;
-        border: 1px solid rgba(16, 185, 129, 0.4);
-        padding: 6px 14px;
-        border-radius: 20px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        padding: 8px 20px;
+        border-radius: 24px;
         font-weight: 700;
-        font-size: 13px;
-        letter-spacing: 0.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        font-size: 12px;
+        letter-spacing: 1.2px;
     }
-    
-    /* Glowing Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 12px;
-        background-color: rgba(15, 23, 42, 0.5);
-        padding: 6px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 8px rgba(239,68,68,0.2); }
+        50% { box-shadow: 0 0 28px rgba(239,68,68,0.45); }
     }
-    
-    .stTabs [data-baseweb="tab"] {
-        font-size: 14px;
+
+    /* ── Zone Labels ── */
+    .zone-lbl {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 2.5px;
+        color: #475569;
         font-weight: 600;
-        color: #94A3B8;
-        border-radius: 8px;
-        padding: 8px 18px;
-        background: transparent;
-        border: none;
+        margin: 20px 0 14px 0;
+        padding-left: 2px;
     }
-    
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%) !important;
-        color: #FFFFFF !important;
-        border: 1px solid rgba(139, 92, 246, 0.4) !important;
-        box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
-    }
-    
-    /* Frosted Metric Boxes */
+
+    /* ── Metric boxes ── */
     [data-testid="stMetric"] {
-        background: rgba(30, 41, 59, 0.45);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 16px;
+        background: rgba(30, 41, 59, 0.35);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 14px;
         border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
-    
     [data-testid="stMetricLabel"] {
         color: #94A3B8 !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.8px;
     }
-    
     [data-testid="stMetricValue"] {
-        color: #F8FAFC !important;
-        font-weight: 800 !important;
+        color: #F1F5F9 !important;
+        font-weight: 700 !important;
     }
-    
-    /* Code Diff Styling */
-    .stCodeBlock {
-        border-radius: 10px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+    /* ── Buttons ── */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%) !important;
+        border: none !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        font-size: 13px;
     }
+    .stButton > button {
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: #CBD5E1 !important;
+        background: rgba(30, 41, 59, 0.4) !important;
+        font-weight: 600 !important;
+    }
+
+    /* ── Selectbox ── */
+    [data-testid="stSelectbox"] label { color: #94A3B8 !important; }
+
+    /* ── Dividers ── */
+    hr { border-color: rgba(255, 255, 255, 0.05) !important; margin: 6px 0 !important; }
+
+    /* ── Expander ── */
+    details summary { color: #CBD5E1 !important; }
+
+    /* ── Dataframe ── */
+    .stDataFrame { border-radius: 12px; overflow: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# DATA LAYER
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DATA_DIR = PROJECT_ROOT / "data" / "mock_environment"
 
 
@@ -168,236 +208,314 @@ def get_environment():
     return env
 
 
+def make_sparkline(values, color="#8B5CF6", height=55):
+    """Tiny inline sparkline with gradient fill."""
+    fill = hex_to_rgba(color, 0.12)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        y=values, mode="lines",
+        line=dict(color=color, width=2, shape="spline"),
+        fill="tozeroy", fillcolor=fill,
+        hoverinfo="y"
+    ))
+    fig.update_layout(
+        height=height, margin=dict(l=0, r=0, t=0, b=0),
+        xaxis=dict(visible=False), yaxis=dict(visible=False),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        showlegend=False
+    )
+    return fig
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# MAIN APP
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 def main():
     env = get_environment()
     agent = AutonomousSREAgent(DATA_DIR)
-    
-    # Sidebar
-    st.sidebar.markdown("### ⚡ **Mission Control // Chaos Lab**")
-    st.sidebar.caption("Tactical Fault Injection & Sandbox")
-    st.sidebar.markdown("---")
-    
-    fault_choice = st.sidebar.selectbox(
-        "Inject Outage Scenario:",
-        options=list(MockCloudEnvironment.FAULT_SCENARIOS.keys()),
-        format_func=lambda x: MockCloudEnvironment.FAULT_SCENARIOS[x]["title"]
-    )
-    
-    col_inj1, col_inj2 = st.sidebar.columns(2)
-    with col_inj1:
-        if st.button("⚡ Inject Outage", type="primary", use_container_width=True):
-            env.inject_fault(fault_choice)
-            st.sidebar.error(f"Injected: {fault_choice}")
-            st.rerun()
-    with col_inj2:
-        if st.button("🔄 Restore Fleet", use_container_width=True):
-            env.clear_fault()
-            st.sidebar.success("All systems restored.")
-            st.rerun()
 
-    # Load Telemetry
     metrics_df = pd.read_csv(DATA_DIR / "prometheus_metrics.csv")
     logs_df = pd.read_csv(DATA_DIR / "opentelemetry_logs.csv")
-    
-    latest_metrics = metrics_df.groupby("service").last().reset_index()
-    max_err = latest_metrics["error_rate_pct"].max()
-    max_p99 = latest_metrics["latency_p99_ms"].max()
-    is_incident_active = max_err > 10.0 or max_p99 > 1000
 
-    # Top Status Ribbon
-    if is_incident_active:
-        badge_html = '<span class="pill-critical">● CRITICAL P0 INCIDENT DETECTED</span>'
-    else:
-        badge_html = '<span class="pill-operational">✓ FLEET HEALTHY // OPTIMAL</span>'
+    latest = metrics_df.groupby("service").last().reset_index()
+    max_err = latest["error_rate_pct"].max()
+    max_p99 = latest["latency_p99_ms"].max()
+    is_incident = max_err > 10.0 or max_p99 > 1000
+
+    # ══════════════════════════════════════════════
+    # ZONE 0 — WAR ROOM HEADER
+    # ══════════════════════════════════════════════
+    pill = '<span class="pill-crit">⦿ P0 INCIDENT ACTIVE</span>' if is_incident \
+        else '<span class="pill-ok">✓ ALL SYSTEMS NOMINAL</span>'
 
     st.markdown(f"""
-    <div class="mission-header">
+    <div class="warroom-hdr">
         <div>
-            <h2 style="margin:0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">
-                TACTICAL COMMAND // <span style="color:#A78BFA;">SRE INCIDENT DEFENSE</span>
-            </h2>
-            <div style="font-size: 13px; color: #94A3B8; margin-top: 4px;">
-                Real-Time Telemetry Correlator & Autonomous Remediation Engine
+            <div style="font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #F8FAFC;">
+                AUTO<span style="color:#8B5CF6;">SRE</span>
+            </div>
+            <div style="font-size: 11px; color: #475569; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px;">
+                Autonomous Incident Response &bull; War Room Command
             </div>
         </div>
-        <div>
-            {badge_html}
-        </div>
+        <div>{pill}</div>
     </div>
     """, unsafe_allow_html=True)
-    
-    # 4 Tactical KPI Cards
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Fleet Status", "P0 CRITICAL" if is_incident_active else "OPERATIONAL", 
-              delta="-Degraded" if is_incident_active else "Stable", delta_color="inverse")
-    k2.metric("Peak P99 Latency", f"{max_p99:.0f} ms", delta=f"+{max_p99-70:.0f}ms" if max_p99 > 80 else None, delta_color="inverse")
-    k3.metric("Peak Error Spike", f"{max_err:.1f}%", delta=f"+{max_err-0.1:.1f}%" if max_err > 1 else None, delta_color="inverse")
-    k4.metric("Active Microservices", f"{len(latest_metrics)} Monitored")
 
-    st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    # ══════════════════════════════════════════════
+    # ZONE 1 — TELEMETRY SPARKLINE STRIP
+    # ══════════════════════════════════════════════
+    st.markdown('<div class="zone-lbl">▸ LIVE TELEMETRY FEED</div>', unsafe_allow_html=True)
 
-    # Tabs
-    tab_mission, tab_agent, tab_telemetry, tab_stream = st.tabs([
-        "🛸 Tactical Service Matrix & Radar",
-        "🧠 SRE Agent Autonomous RCA & Diff",
-        "📈 Prometheus Telemetry Curves",
-        "📜 OpenTelemetry Live Feed"
-    ])
+    ts_agg = metrics_df.groupby("timestamp").agg({
+        "cpu_usage_pct": "mean",
+        "latency_p99_ms": "mean",
+        "error_rate_pct": "mean",
+        "active_connections": "mean"
+    }).reset_index()
 
-    # ==========================================
-    # TAB 1: SERVICE MATRIX & RADAR
-    # ==========================================
-    with tab_mission:
-        st.subheader("Microservice Fleet Status Grid")
-        
-        svc_cols = st.columns(len(latest_metrics))
-        for idx, row in latest_metrics.iterrows():
-            with svc_cols[idx]:
-                is_deg = row["error_rate_pct"] > 5.0 or row["latency_p99_ms"] > 500
-                st.markdown(f"""
-                <div class="glass-card" style="padding: 14px; text-align: center; border-color: {'rgba(239, 68, 68, 0.4)' if is_deg else 'rgba(16, 185, 129, 0.3)'};">
-                    <div style="font-size: 11px; text-transform: uppercase; color: #94A3B8;">{'🔴 DEGRADED' if is_deg else '🟢 NORMAL'}</div>
-                    <div style="font-size: 15px; font-weight: 700; color: #F8FAFC; margin: 4px 0;">{row['service']}</div>
-                    <div style="font-size: 12px; color: #CBD5E1;">CPU: <b>{row['cpu_usage_pct']}%</b></div>
-                    <div style="font-size: 12px; color: #CBD5E1;">P99: <b>{row['latency_p99_ms']}ms</b></div>
-                    <div style="font-size: 12px; color: {'#FCA5A5' if is_deg else '#CBD5E1'};">Err: <b>{row['error_rate_pct']}%</b></div>
-                </div>
-                """, unsafe_allow_html=True)
+    cpu_vals = ts_agg["cpu_usage_pct"].values[-20:]
+    lat_vals = ts_agg["latency_p99_ms"].values[-20:]
+    err_vals = ts_agg["error_rate_pct"].values[-20:]
+    conn_vals = ts_agg["active_connections"].values[-20:]
 
-        st.markdown("---")
-        
-        # Latency Radar Map
-        radar_categories = latest_metrics["service"].tolist()
-        radar_values = latest_metrics["latency_p99_ms"].tolist()
-        # close the polygon
-        radar_categories += [radar_categories[0]]
-        radar_values += [radar_values[0]]
-        
+    s1, s2, s3, s4 = st.columns(4)
+
+    with s1:
+        st.markdown(f"""<div class="spark-card">
+            <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;">Fleet CPU</div>
+            <div style="font-size:26px;font-weight:800;color:#E2E8F0;margin:4px 0 2px 0;">{cpu_vals[-1]:.1f}%</div>
+        </div>""", unsafe_allow_html=True)
+        st.plotly_chart(make_sparkline(cpu_vals, "#8B5CF6"), use_container_width=True, config={"displayModeBar": False})
+
+    with s2:
+        lc = "#EF4444" if lat_vals[-1] > 500 else "#8B5CF6"
+        st.markdown(f"""<div class="spark-card">
+            <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;">Avg P99 Latency</div>
+            <div style="font-size:26px;font-weight:800;color:{lc};margin:4px 0 2px 0;">{lat_vals[-1]:.0f}ms</div>
+        </div>""", unsafe_allow_html=True)
+        st.plotly_chart(make_sparkline(lat_vals, lc), use_container_width=True, config={"displayModeBar": False})
+
+    with s3:
+        ec = "#EF4444" if err_vals[-1] > 5 else "#10B981"
+        st.markdown(f"""<div class="spark-card">
+            <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;">Avg Error Rate</div>
+            <div style="font-size:26px;font-weight:800;color:{ec};margin:4px 0 2px 0;">{err_vals[-1]:.1f}%</div>
+        </div>""", unsafe_allow_html=True)
+        st.plotly_chart(make_sparkline(err_vals, ec), use_container_width=True, config={"displayModeBar": False})
+
+    with s4:
+        st.markdown(f"""<div class="spark-card">
+            <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1.5px;">Active Connections</div>
+            <div style="font-size:26px;font-weight:800;color:#3B82F6;margin:4px 0 2px 0;">{conn_vals[-1]:.0f}</div>
+        </div>""", unsafe_allow_html=True)
+        st.plotly_chart(make_sparkline(conn_vals, "#3B82F6"), use_container_width=True, config={"displayModeBar": False})
+
+    # ══════════════════════════════════════════════
+    # ZONE 2 — SERVICE FLEET GRID + RADAR
+    # ══════════════════════════════════════════════
+    st.markdown('<div class="zone-lbl">▸ MICROSERVICE FLEET STATUS</div>', unsafe_allow_html=True)
+
+    grid_col, radar_col = st.columns([3, 2])
+
+    with grid_col:
+        services = latest.to_dict("records")
+        rows = [services[i:i + 3] for i in range(0, len(services), 3)]
+
+        for row_batch in rows:
+            cols = st.columns(len(row_batch))
+            for col, svc in zip(cols, row_batch):
+                with col:
+                    deg = svc["error_rate_pct"] > 5.0 or svc["latency_p99_ms"] > 500
+                    cls = "svc-card degraded" if deg else "svc-card nominal"
+                    dot_color = "#FCA5A5" if deg else "#6EE7B7"
+                    dot_icon = "🔴" if deg else "🟢"
+                    st_text = "DEGRADED" if deg else "NOMINAL"
+
+                    st.markdown(f"""
+                    <div class="{cls}">
+                        <div style="font-size:10px;color:{dot_color};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">
+                            {dot_icon} {st_text}
+                        </div>
+                        <div style="font-size:15px;font-weight:700;color:#F8FAFC;margin-bottom:12px;">
+                            {svc['service']}
+                        </div>
+                        <div style="display:flex;justify-content:space-around;font-size:12px;">
+                            <div><div style="color:#475569;">CPU</div><div style="font-weight:700;color:#E2E8F0;">{svc['cpu_usage_pct']:.0f}%</div></div>
+                            <div><div style="color:#475569;">P99</div><div style="font-weight:700;color:{'#FCA5A5' if svc['latency_p99_ms']>500 else '#E2E8F0'};">{svc['latency_p99_ms']:.0f}ms</div></div>
+                            <div><div style="color:#475569;">ERR</div><div style="font-weight:700;color:{'#FCA5A5' if svc['error_rate_pct']>5 else '#E2E8F0'};">{svc['error_rate_pct']:.1f}%</div></div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+    with radar_col:
+        cats = latest["service"].tolist()
+        r_vals = latest["latency_p99_ms"].tolist()
+        cats += [cats[0]]
+        r_vals += [r_vals[0]]
+
         fig_radar = go.Figure()
         fig_radar.add_trace(go.Scatterpolar(
-            r=radar_values,
-            theta=radar_categories,
-            fill='toself',
-            fillcolor='rgba(139, 92, 246, 0.25)',
-            line=dict(color='#8B5CF6', width=2),
-            name='Latency P99 (ms)'
+            r=r_vals, theta=cats,
+            fill="toself",
+            fillcolor="rgba(139, 92, 246, 0.18)",
+            line=dict(color="#8B5CF6", width=2.5),
+            name="P99 Latency"
         ))
         fig_radar.update_layout(
             polar=dict(
-                radialaxis=dict(visible=True, range=[0, max(1000, max_p99 * 1.1)], color="#94A3B8", gridcolor="rgba(255,255,255,0.08)"),
-                angularaxis=dict(color="#CBD5E1", gridcolor="rgba(255,255,255,0.08)")
+                bgcolor="rgba(0,0,0,0)",
+                radialaxis=dict(visible=True, range=[0, max(1000, max_p99 * 1.15)],
+                                color="#475569", gridcolor="rgba(255,255,255,0.04)",
+                                tickfont=dict(size=9, color="#475569")),
+                angularaxis=dict(color="#94A3B8", gridcolor="rgba(255,255,255,0.04)",
+                                 tickfont=dict(size=10, color="#94A3B8"))
             ),
-            showlegend=False,
-            height=380,
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)"
+            showlegend=False, height=380,
+            margin=dict(l=50, r=50, t=40, b=30),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"
         )
-        st.markdown("#### Service Latency Topology Radar")
-        st.plotly_chart(fig_radar, use_container_width=True)
+        st.markdown("""<div style="text-align:center;font-size:13px;font-weight:700;color:#A78BFA;
+                    letter-spacing:2px;text-transform:uppercase;margin-bottom:-8px;">
+            Latency Topology Radar</div>""", unsafe_allow_html=True)
+        st.plotly_chart(fig_radar, use_container_width=True, config={"displayModeBar": False})
 
-    # ==========================================
-    # TAB 2: AGENT AUTONOMOUS RCA & DIFF
-    # ==========================================
-    with tab_agent:
-        st.subheader("Autonomous ReAct Root Cause Analysis Engine")
-        st.markdown(
-            "The SRE Agent executes an automated **ReAct diagnostic loop**: Correlates multi-service Prometheus spikes, "
-            "inspects distributed trace exceptions, checks recent Git commits, executes sandbox commands, and synthesizes a production `git diff`."
+    st.markdown("---")
+
+    # ══════════════════════════════════════════════
+    # ZONE 3 — CHAOS ENGINEERING CONTROLS
+    # ══════════════════════════════════════════════
+    st.markdown('<div class="zone-lbl">▸ CHAOS ENGINEERING LAB</div>', unsafe_allow_html=True)
+
+    ch1, ch2, ch3 = st.columns([3, 1, 1])
+    with ch1:
+        fault_choice = st.selectbox(
+            "Inject Scenario:",
+            options=list(MockCloudEnvironment.FAULT_SCENARIOS.keys()),
+            format_func=lambda x: f"⚡ {MockCloudEnvironment.FAULT_SCENARIOS[x]['title']}",
+            label_visibility="collapsed"
         )
-        
-        if st.button("🚀 Trigger Autonomous Investigation & Sandbox Replay", type="primary"):
-            with st.spinner("Agent running correlation across Prometheus, OpenTelemetry, and Git logs..."):
-                investigation = agent.investigate_incident()
-                st.session_state["sre_investigation"] = investigation
-                
-        if "sre_investigation" in st.session_state:
-            res = st.session_state["sre_investigation"]
-            
-            st.success(f"**Root Cause Analysis Confirmed:** `{res['incident_title']}`")
-            
-            col_rca_l, col_rca_r = st.columns([3, 2])
-            
-            with col_rca_l:
-                st.markdown(f"""
-                <div class="glass-card">
-                    <h3 style="margin-top:0; color:#F8FAFC;">Incident Post-Mortem</h3>
-                    <p><b>Primary Culprit Microservice:</b> <span style="color:#A78BFA; font-family:'JetBrains Mono';">{res['culprit_service']}</span></p>
-                    <p><b>Root Cause Hypothesis:</b><br>{res['root_cause']}</p>
-                    <p><b>Remediation Action:</b><br><code>{res['remediation_action']}</code></p>
+    with ch2:
+        if st.button("⚡ INJECT FAULT", type="primary", use_container_width=True):
+            env.inject_fault(fault_choice)
+            st.rerun()
+    with ch3:
+        if st.button("🔄 RESTORE ALL", use_container_width=True):
+            env.clear_fault()
+            st.rerun()
+
+    st.markdown("---")
+
+    # ══════════════════════════════════════════════
+    # ZONE 4 — AUTONOMOUS AGENT INVESTIGATION
+    # ══════════════════════════════════════════════
+    st.markdown('<div class="zone-lbl">▸ AUTONOMOUS AGENT INVESTIGATION</div>', unsafe_allow_html=True)
+
+    if st.button("🚀 LAUNCH AUTONOMOUS ROOT CAUSE ANALYSIS", type="primary", use_container_width=True):
+        with st.spinner("Agent correlating Prometheus ➜ OpenTelemetry ➜ Git history..."):
+            investigation = agent.investigate_incident()
+            st.session_state["sre_investigation"] = investigation
+
+    if "sre_investigation" in st.session_state:
+        res = st.session_state["sre_investigation"]
+
+        rca_left, rca_right = st.columns([3, 2])
+
+        with rca_left:
+            st.markdown(f"""
+            <div class="glass" style="border-left: 3px solid #8B5CF6;">
+                <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">
+                    INCIDENT POST-MORTEM
                 </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown("### Synthesized Remediation Diff (`git patch`)")
-                st.code(res["patch_diff"], language="diff")
-                
-                st.markdown("#### Human-in-the-Loop Safe Deployment")
-                btn_c1, btn_c2 = st.columns(2)
-                with btn_c1:
-                    if st.button("✅ Approve & Auto-Deploy Patch", type="primary", use_container_width=True):
-                        env.clear_fault()
-                        st.success("Patch applied to container pods. Database pool recycled. Incident resolved!")
-                with btn_c2:
-                    if st.button("❌ Escalate to Human On-Call Lead", use_container_width=True):
-                        st.warning("Incident escalated to Level 3 SRE Lead via PagerDuty.")
+                <div style="font-size:20px;font-weight:700;color:#F8FAFC;margin-bottom:14px;">
+                    {res['incident_title']}
+                </div>
+                <div style="margin-bottom:10px;">
+                    <span style="color:#94A3B8;font-size:13px;">Culprit Service</span><br/>
+                    <span style="color:#A78BFA;font-family:'JetBrains Mono';font-weight:600;font-size:15px;">{res['culprit_service']}</span>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <span style="color:#94A3B8;font-size:13px;">Root Cause</span><br/>
+                    <span style="color:#E2E8F0;font-size:14px;">{res['root_cause']}</span>
+                </div>
+                <div>
+                    <span style="color:#94A3B8;font-size:13px;">Remediation</span><br/>
+                    <code style="background:rgba(139,92,246,0.12);color:#C4B5FD;padding:3px 8px;border-radius:6px;font-size:13px;">{res['remediation_action']}</code>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            with col_rca_r:
-                st.markdown("### Agent Reasoning & Audit Trace")
-                for step in res["reasoning_trace"]:
-                    with st.expander(f"⚙️ {step['stage']}", expanded=True):
-                        st.write(step["details"])
+            st.markdown("##### Synthesized Remediation Patch")
+            st.code(res["patch_diff"], language="diff")
 
-    # ==========================================
-    # TAB 3: PROMETHEUS TELEMETRY
-    # ==========================================
-    with tab_telemetry:
-        st.subheader("Prometheus High-Frequency Telemetry Curves")
-        
+            d1, d2 = st.columns(2)
+            with d1:
+                if st.button("✅ APPROVE & AUTO-DEPLOY", type="primary", use_container_width=True):
+                    env.clear_fault()
+                    st.success("Patch applied. Database pool recycled. Incident resolved.")
+            with d2:
+                if st.button("❌ ESCALATE TO ON-CALL LEAD", use_container_width=True):
+                    st.warning("Escalated to L3 SRE Lead via PagerDuty.")
+
+        with rca_right:
+            st.markdown("""<div style="font-size:10px;color:#64748B;text-transform:uppercase;
+                        letter-spacing:2px;margin-bottom:12px;">AGENT REASONING TRACE</div>""",
+                        unsafe_allow_html=True)
+            for step in res["reasoning_trace"]:
+                with st.expander(f"⚙️ {step['stage']}", expanded=False):
+                    st.write(step["details"])
+
+    st.markdown("---")
+
+    # ══════════════════════════════════════════════
+    # ZONE 5 — TELEMETRY DEEP DIVE + LOG STREAM
+    # ══════════════════════════════════════════════
+    st.markdown('<div class="zone-lbl">▸ TELEMETRY DEEP DIVE & LOG STREAM</div>', unsafe_allow_html=True)
+
+    tele_col, log_col = st.columns(2)
+
+    with tele_col:
         metric_choice = st.selectbox(
-            "Select Telemetry Stream:",
-            ["latency_p99_ms", "error_rate_pct", "cpu_usage_pct", "active_connections"]
+            "Telemetry metric:",
+            ["latency_p99_ms", "error_rate_pct", "cpu_usage_pct", "active_connections"],
+            format_func=lambda x: x.replace("_", " ").upper()
         )
-        
-        fig_metric = px.line(
-            metrics_df,
-            x="timestamp",
-            y=metric_choice,
-            color="service",
-            title=f"Telemetry: {metric_choice.replace('_', ' ').upper()}",
-            color_discrete_sequence=["#8B5CF6", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#EC4899"]
+        fig_ts = go.Figure()
+        for svc_name in metrics_df["service"].unique():
+            svc_df = metrics_df[metrics_df["service"] == svc_name]
+            fig_ts.add_trace(go.Scatter(
+                x=svc_df["timestamp"], y=svc_df[metric_choice],
+                mode="lines", name=svc_name, line=dict(width=2)
+            ))
+        fig_ts.update_layout(
+            height=330, hovermode="x unified",
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(gridcolor="rgba(255,255,255,0.03)", color="#94A3B8",
+                       tickfont=dict(size=10, color="#64748B")),
+            yaxis=dict(gridcolor="rgba(255,255,255,0.03)", color="#94A3B8",
+                       tickfont=dict(size=10, color="#64748B")),
+            legend=dict(font=dict(color="#94A3B8", size=10), orientation="h",
+                        yanchor="bottom", y=1.02, xanchor="right", x=1),
+            colorway=["#8B5CF6", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#EC4899"],
+            margin=dict(l=10, r=10, t=10, b=10)
         )
-        fig_metric.update_layout(
-            height=420,
-            hovermode="x unified",
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(gridcolor="rgba(255,255,255,0.06)"),
-            yaxis=dict(gridcolor="rgba(255,255,255,0.06)")
-        )
-        st.plotly_chart(fig_metric, use_container_width=True)
+        st.plotly_chart(fig_ts, use_container_width=True, config={"displayModeBar": False})
 
-    # ==========================================
-    # TAB 4: OPENTELEMETRY LIVE FEED
-    # ==========================================
-    with tab_stream:
-        st.subheader("Distributed OpenTelemetry Log Pipeline")
-        
-        flt_c1, flt_c2 = st.columns(2)
-        with flt_c1:
-            lvl_filter = st.selectbox("Severity Level:", ["ALL", "FATAL", "ERROR", "WARN", "INFO"])
-        with flt_c2:
-            svc_filter = st.selectbox("Microservice:", ["ALL"] + MockCloudEnvironment.SERVICES)
-            
+    with log_col:
+        st.markdown("**OpenTelemetry Log Stream**")
+        f1, f2 = st.columns(2)
+        with f1:
+            lvl = st.selectbox("Severity:", ["ALL", "FATAL", "ERROR", "WARN", "INFO"])
+        with f2:
+            svc_filter = st.selectbox("Service:", ["ALL"] + MockCloudEnvironment.SERVICES)
+
         display_logs = logs_df.copy()
-        if lvl_filter != "ALL":
-            display_logs = display_logs[display_logs["level"] == lvl_filter]
+        if lvl != "ALL":
+            display_logs = display_logs[display_logs["level"] == lvl]
         if svc_filter != "ALL":
             display_logs = display_logs[display_logs["service"] == svc_filter]
-            
-        st.dataframe(
-            display_logs.head(40),
-            use_container_width=True,
-            hide_index=True
-        )
+
+        st.dataframe(display_logs.head(25), use_container_width=True, hide_index=True, height=300)
 
 
 if __name__ == "__main__":
